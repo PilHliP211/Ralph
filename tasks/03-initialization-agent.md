@@ -38,3 +38,4 @@ Create the one-time initialization flow that turns a project spec into a scaffol
 
 ## Notes
 - Use JSON for PRD to reduce accidental mutation beyond `passes`.
+- Validate `prd.json` with Zod as the schema validator.

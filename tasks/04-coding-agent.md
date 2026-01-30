@@ -40,3 +40,4 @@ Implement the iterative coding loop that selects one PRD feature at a time, impl
 ## Notes
 - PRD edits are strictly limited to flipping `passes: false` to `passes: true` for the current feature. No other PRD fields may be changed.
 - Use persisted artifacts as memory between sessions.
+- Validate `prd.json` with Zod as the schema validator.
