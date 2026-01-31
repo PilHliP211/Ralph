@@ -1,14 +1,12 @@
 # Coding Agent Loop (Task 04)
 
-This document describes how the coding agent loop works and where its shared tooling lives.
+This document defines the required behaviors for the coding agent during each loop iteration.
 
 ## Overview
-- `runCodingLoop` is responsible for selecting the next `passes: false` feature from `prd.json`,
-  running a single-feature coding iteration, and updating PRD/progress artifacts.
-- PRD validation and mutation checks ensure only the active feature’s `passes` flag can flip
-  from `false` to `true`.
-- Loop outputs are persisted to `temp-docs/last-run.json`, and `temp-docs/next.md` is rewritten
-  every iteration.
+- Select the next `passes: false` feature from `prd.json` and complete exactly one feature per
+  loop iteration.
+- Only the active feature’s `passes` flag may change from `false` to `true`.
+- Update PRD and progress artifacts for each iteration.
 
 ## Agent constraints (prompt content)
 - Implement exactly one PRD feature per loop.
@@ -17,20 +15,17 @@ This document describes how the coding agent loop works and where its shared too
 - Tool calls outside the selected feature scope are forbidden.
 - Only update `prd.json` by flipping the selected feature’s `passes` from `false` to `true`.
 - Run ESLint, Playwright tests for the feature, and a secondary smoke/spot test.
-- Commit changes with `git add -A` and `git commit -m "..."` once work passes tests.
+- Commit changes with `git add -A` and the dedicated git commit tool once work passes tests.
 - Summarize the work and list any temp docs created.
 
-## Shared tooling
-Tool definitions are shared between initialization and coding agents in `src/tools/agent-tools.ts`.
-
-Exports include:
-- `createFileTools` — file IO (`readFile`, `writeFile`, `mkdir`, `listDir`) with optional
-  acceptance-step gating and PRD validation hooks.
-- `createGitTools` — git helpers (`gitInit`, `gitAdd`, `gitCommit`, `gitStatus`, `gitLog`).
-- `createCommandTools` — shell, lint, and Playwright helpers.
-- `runCommand` — shared command runner.
+## Tooling expectations
+- Use the provided file tools for reading, writing, creating directories, and listing files.
+- Use the provided git tools for git actions such as add, commit, status, and log.
+- Only the initialization agent may use git initialization tooling; the coding agent must not
+  invoke git init.
+- Use the provided command tools for shell, linting, and Playwright test execution.
 
 ## Files
-- `src/coding-agent.ts` — coding loop logic and PRD enforcement.
-- `src/init-agent.ts` — initialization loop using shared tools.
-- `src/tools/agent-tools.ts` — shared tool factories.
+- `prd.json`
+- `temp-docs/last-run.json`
+- `temp-docs/next.md`
