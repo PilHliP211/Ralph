@@ -2,7 +2,7 @@ import { readFile, readdir, mkdir as mkdirFs, writeFile as writeFileFs } from "n
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { Agent, tool } from "@openai/agents";
+import { Agent, run, tool } from "@openai/agents";
 import { z, ZodError } from "zod";
 
 import { prdSchema } from "./schemas/prd";
@@ -133,11 +133,10 @@ export async function runInitialization(options: InitOptions): Promise<void> {
     name: "gitInit",
     description: "Initialize a git repository.",
     parameters: z.object({
-      path: z.string().optional()
+      path: z.string()
     }),
     execute: async ({ path: repoPath }) => {
-      const command = repoPath ? `cd ${repoPath} && git init` : "git init";
-      return runCommand(command);
+      return runCommand(`cd ${repoPath} && git init`);
     }
   });
 
@@ -145,11 +144,10 @@ export async function runInitialization(options: InitOptions): Promise<void> {
     name: "gitAdd",
     description: "Stage all files for commit.",
     parameters: z.object({
-      path: z.string().optional()
+      path: z.string()
     }),
     execute: async ({ path: repoPath }) => {
-      const command = repoPath ? `cd ${repoPath} && git add -A` : "git add -A";
-      return runCommand(command);
+      return runCommand(`cd ${repoPath} && git add -A`);
     }
   });
 
@@ -158,13 +156,10 @@ export async function runInitialization(options: InitOptions): Promise<void> {
     description: "Commit staged files with a message.",
     parameters: z.object({
       message: z.string(),
-      path: z.string().optional()
+      path: z.string()
     }),
     execute: async ({ message, path: repoPath }) => {
-      const command = repoPath
-        ? `cd ${repoPath} && git commit -m ${JSON.stringify(message)}`
-        : `git commit -m ${JSON.stringify(message)}`;
-      return runCommand(command);
+      return runCommand(`cd ${repoPath} && git commit -m ${JSON.stringify(message)}`);
     }
   });
 
@@ -172,19 +167,18 @@ export async function runInitialization(options: InitOptions): Promise<void> {
     name: "gitStatus",
     description: "Get git status summary.",
     parameters: z.object({
-      path: z.string().optional()
+      path: z.string()
     }),
     execute: async ({ path: repoPath }) => {
-      const command = repoPath ? `cd ${repoPath} && git status --short` : "git status --short";
-      return runCommand(command);
+      return runCommand(`cd ${repoPath} && git status --short`);
     }
   });
 
   const agent = new Agent({
     name: "initialization-agent",
     instructions,
-    model: {
-      name: "gpt-4.1-mini",
+    model: "gpt-4.1-mini",
+    modelSettings: {
       temperature: 0.2
     },
     tools: [
@@ -200,7 +194,7 @@ export async function runInitialization(options: InitOptions): Promise<void> {
   });
 
   const input = `Project directory: ${options.projectDir}\n\nProject specification:\n${specContent}`;
-  await agent.run({ input });
+  await run(agent, input);
 
   console.log("[ralph] Initialization agent completed.");
 }

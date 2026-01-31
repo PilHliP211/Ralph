@@ -2,6 +2,9 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
+import { setDefaultModelProvider } from "@openai/agents";
+import { OpenAIProvider } from "@openai/agents-openai";
+
 import { runCodingLoop } from "./coding-agent";
 import { runInitialization } from "./init-agent";
 
@@ -46,11 +49,19 @@ function ensureSpecExists(specPath: string): void {
   }
 }
 
-function ensureApiKey(): void {
-  if (!process.env.OPENAI_API_KEY) {
+function ensureApiKey(mode: RunContext["mode"]): void {
+  if (process.env.OPENAI_API_KEY) {
+    return;
+  }
+
+  if (mode === "continue") {
     console.error("[ralph] Missing OPENAI_API_KEY environment variable.");
     process.exit(1);
   }
+
+  console.warn(
+    "[ralph] OPENAI_API_KEY is not set. Initialization will run until the agent attempts API calls."
+  );
 }
 
 function parseArgs(): RunContext {
@@ -179,6 +190,11 @@ function registerSignalHandlers(cleanup: () => Promise<void>): void {
   process.on("SIGTERM", handleSignal);
 }
 
-ensureApiKey();
 const context = parseArgs();
+setDefaultModelProvider(
+  new OpenAIProvider({
+    apiKey: process.env.OPENAI_API_KEY
+  })
+);
+ensureApiKey(context.mode);
 void runLifecycle(context);
