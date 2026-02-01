@@ -1,24 +1,29 @@
-# Task 01: Project Overview & Foundation
+# Task 01: Project Overview & Feature Parity Baseline
 
 ## Goal
-Set the foundation for the CLI-based agentic AI harness (Ralph Wiggum technique) by translating the master plan into actionable objectives and artifacts that all future tasks will reference.
+Align the Ralph harness with the Claude autonomous-coding quick start feature set, with the only difference being OpenAI model usage.
 
-## Key Outcomes
-- Align on the harness objective: an agent loop that enforces memory, decomposition, and incremental delivery through persistent artifacts (PRD, Git history, logs).
-- Confirm the two-agent model: Initialization Agent (one-time setup) and Coding Agent (iterative feature delivery).
-- Establish core artifacts that persist across runs:
-  - `prd.json` (feature ledger with `passes` state).
-  - Git history (progress memory).
-  - Optional `progress.md` session log.
-- Establish tech stack expectations:
-  - Bun + TypeScript for the CLI harness.
-  - OpenAI Agent SDK for agent orchestration.
-  - Playwright for end-to-end verification.
-  - ESLint for code quality.
+## Quickstart Parity Targets
+- Two-agent pattern: initialization session + iterative coding sessions.
+- Persisted artifacts as memory:
+  - `feature_list.json` (source of truth; includes `passes` state per feature).
+  - `app_spec.txt` (copied into project dir).
+  - `init.sh` (setup script scaffolded by the initializer).
+  - `progress.txt` or `progress.md` (session notes).
+  - Security settings file (OpenAI-flavored equivalent of `.claude_settings.json`).
+- Session management behavior:
+  - fresh context per run.
+  - auto-continue with a short delay (3s) between iterations.
+  - resume by re-running the same command.
+- CLI options parity:
+  - `--project-dir`
+  - `--max-iterations`
+  - `--model` (OpenAI model ID)
+- Document the timing expectations and guidance for reducing feature count.
 
 ## Deliverables
-- A clear mapping of the harness responsibilities to the artifacts it must create or maintain.
-- A high-level project directory model (source modules, scripts, configs).
+- Updated task set that mirrors the quickstart flow end-to-end (init → iterate → resume).
+- A checklist mapping quickstart components to Ralph modules (entrypoint, client, security, progress, prompts, agents).
 
-## References
-- Foundational plan: "Implementation Plan: CLI-Based Agentic AI Harness (Ralph Wiggum Technique)."
+## Notes
+- The implementation must use OpenAI models, but should otherwise match the quickstart behaviors.
