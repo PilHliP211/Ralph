@@ -5,18 +5,24 @@ import { fileURLToPath } from "node:url";
 import { Agent, run, tool } from "@openai/agents";
 import { z, ZodError } from "zod";
 
-import { prdSchema } from "./schemas/prd";
+import { featureListSchema } from "./schemas/feature-list";
 
-const PRD_FILENAME = "prd.json";
+const FEATURE_LIST_FILENAME = "feature_list.json";
+const APP_SPEC_FILENAME = "app_spec.txt";
 
 export interface InitOptions {
-  specPath: string;
   projectDir: string;
+  model: string;
 }
 
 function getPromptPath(): string {
   const moduleDir = path.dirname(fileURLToPath(import.meta.url));
-  return path.resolve(moduleDir, "..", "prompts", "init-agent.md");
+  return path.resolve(moduleDir, "..", "prompts", "initializer_prompt.md");
+}
+
+function getSpecPath(): string {
+  const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+  return path.resolve(moduleDir, "..", "prompts", APP_SPEC_FILENAME);
 }
 
 async function loadInstructions(): Promise<string> {
@@ -43,8 +49,8 @@ async function runCommand(command: string): Promise<string> {
   return stdout.trim();
 }
 
-function validatePrdIfNeeded(targetPath: string, contents: string): void {
-  if (path.basename(targetPath) !== PRD_FILENAME) {
+function validateFeatureListIfNeeded(targetPath: string, contents: string): void {
+  if (path.basename(targetPath) !== FEATURE_LIST_FILENAME) {
     return;
   }
 
@@ -53,15 +59,15 @@ function validatePrdIfNeeded(targetPath: string, contents: string): void {
     parsed = JSON.parse(contents);
   } catch (error) {
     throw new Error(
-      `PRD must be valid JSON: ${error instanceof Error ? error.message : String(error)}`
+      `Feature list must be valid JSON: ${error instanceof Error ? error.message : String(error)}`
     );
   }
 
   try {
-    prdSchema.parse(parsed);
+    featureListSchema.parse(parsed);
   } catch (error) {
     if (error instanceof ZodError) {
-      throw new Error(`PRD schema validation failed: ${error.message}`);
+      throw new Error(`Feature list schema validation failed: ${error.message}`);
     }
     throw error;
   }
@@ -69,14 +75,10 @@ function validatePrdIfNeeded(targetPath: string, contents: string): void {
 
 export async function runInitialization(options: InitOptions): Promise<void> {
   console.log("[ralph] Initialization agent starting...", {
-    specPath: options.specPath,
     projectDir: options.projectDir
   });
 
-  const [specContent, instructions] = await Promise.all([
-    readFile(options.specPath, "utf8"),
-    loadInstructions()
-  ]);
+  const [specContent, instructions] = await Promise.all([readFile(getSpecPath(), "utf8"), loadInstructions()]);
 
   const readFileTool = tool({
     name: "readFile",
@@ -95,7 +97,7 @@ export async function runInitialization(options: InitOptions): Promise<void> {
       contents: z.string()
     }),
     execute: async ({ path: targetPath, contents }) => {
-      validatePrdIfNeeded(targetPath, contents);
+      validateFeatureListIfNeeded(targetPath, contents);
       await mkdirFs(path.dirname(targetPath), { recursive: true });
       await writeFileFs(targetPath, contents, "utf8");
       return `Wrote ${targetPath}`;
@@ -177,7 +179,7 @@ export async function runInitialization(options: InitOptions): Promise<void> {
   const agent = new Agent({
     name: "initialization-agent",
     instructions,
-    model: "gpt-4.1-mini",
+    model: options.model,
     modelSettings: {
       temperature: 0.2
     },
