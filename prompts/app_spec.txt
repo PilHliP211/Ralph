@@ -1,0 +1,17 @@
+Build a small demo web application for this autonomous coding harness.
+
+Requirements:
+- The app is a simple personal habit tracker.
+- Users can add a habit with a title and optional description.
+- Users can mark a habit as done for today.
+- Users can edit or delete habits.
+- Persist data in a local JSON file or lightweight database suitable for quick demo use.
+- Provide a minimal README with setup and run instructions.
+
+Non-goals:
+- No authentication or multi-user support.
+- No payments or external integrations.
+
+Notes:
+- Keep the UI simple and functional.
+- Prioritize clarity over polish.
