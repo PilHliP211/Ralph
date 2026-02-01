@@ -14,10 +14,6 @@ interface RunContext {
   model: string;
 }
 
-interface IterationResult {
-  completed: boolean;
-}
-
 const FEATURE_LIST_FILENAME = "feature_list.json";
 const DEFAULT_PROJECT_DIR = "./autonomous_demo_project";
 const DEFAULT_MODEL = "gpt-4.1";
